@@ -1,4 +1,4 @@
-# Tên Dự Án Của Bạn (myapp)
+# Chat App
 
 Một ứng dụng chat được xây dựng bằng Flutter.
 
@@ -6,7 +6,7 @@ Một ứng dụng chat được xây dựng bằng Flutter.
 
 Đây là một dự án Flutter nhằm mục đích tạo ra một ứng dụng chat với các tính năng cơ bản và một số tính năng nâng cao.
 
-## Các Tính Năng Dự Kiến (Dựa trên Dependencies)
+## Các Tính Năng:
 
 Dựa trên các thư viện được sử dụng trong `pubspec.yaml`, ứng dụng này có thể có các tính năng sau:
 
@@ -99,11 +99,3 @@ Phần này mô tả luồng hoạt động chính của ứng dụng. Ví dụ:
 *   `attach.png`
 *   `image.png`
 *   `no_avatar.jpg`
-
-## Đóng Góp (Cần Bổ Sung)
-
-Nếu bạn muốn cho phép người khác đóng góp vào dự án, hãy thêm hướng dẫn tại đây.
-
-## Giấy Phép (Cần Bổ Sung)
-
-Chỉ định giấy phép cho dự án của bạn (ví dụ: MIT, Apache 2.0).
