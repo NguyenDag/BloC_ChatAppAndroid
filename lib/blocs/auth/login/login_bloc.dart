@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:myapp/blocs/auth/login/login_event.dart';
@@ -7,7 +6,6 @@ import 'package:myapp/services/login_service.dart';
 import 'package:myapp/services/token_service.dart';
 
 class LoginBloC extends Bloc<LoginEvent, LoginState> {
-  // LoginBloC(super.initialState);
   LoginBloC() : super(LoginInitial()) {
     on<UsernameLoaded>(_onUsernameLoaded);
     on<LoginSubmitted>(_onLoginSubmitted);

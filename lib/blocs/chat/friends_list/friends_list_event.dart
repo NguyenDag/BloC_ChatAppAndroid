@@ -16,7 +16,15 @@ class RefreshFriends extends FriendsListEvent {}
 class SearchFriendChanged extends FriendsListEvent {
   final String query;
 
-  const SearchFriendChanged(this.query);
+  const SearchFriendChanged({required this.query});
 }
 
 class ClearSearch extends FriendsListEvent {}
+
+class OpenChatWithFriend extends FriendsListEvent {
+  final Map<String, dynamic> friendData;
+
+  const OpenChatWithFriend({required this.friendData});
+}
+
+class LogoutRequested extends FriendsListEvent {}

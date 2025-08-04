@@ -1,118 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:myapp/blocs/chat/friends_list/friends_list_bloc.dart';
+import 'package:myapp/blocs/chat/friends_list/friends_list_event.dart';
+import 'package:myapp/blocs/chat/friends_list/friends_list_state.dart';
 import 'package:myapp/constants/api_constants.dart';
 import 'package:myapp/models/opp_model.dart';
-import 'package:myapp/pages/login_page.dart';
 import 'package:myapp/pages/online_chat.dart';
-import 'package:myapp/services/realm_friend_service.dart';
-import 'package:myapp/services/token_service.dart';
-import 'package:myapp/services/user_storage.dart';
 
 import '../constants/color_constants.dart';
 import '../services/friend_service.dart';
 
 late Size mq;
 
-class FriendsList extends StatefulWidget {
+class FriendsList extends StatelessWidget {
   const FriendsList({super.key});
 
   @override
-  State<StatefulWidget> createState() {
-    return MyHome();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => FriendsListBloc(),
+      child: BlocListener<FriendsListBloc, FriendsListState>(
+        listener: (context, state) {
+          if (state is ChatOpened) {
+            final friend = friendFromJson(state.friendData);
+            final avatarUrl = state.friendData['avatarUrl'] ?? '';
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder:
+                    (_) => OnlineChat(friend: friend, avatarUrl: avatarUrl),
+              ),
+            );
+          }
+        },
+        child: const FriendsListView(),
+      ),
+    );
   }
 }
 
-class MyHome extends State<FriendsList> {
+class FriendsListView extends StatefulWidget {
+  const FriendsListView({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _FriendsListViewState();
+}
+
+class _FriendsListViewState extends State<FriendsListView> {
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> friendsList = [];
   List<Map<String, dynamic>> originalFriendsList = [];
   Map<String, dynamic>? currentUser;
-  void _clearSearch() {
-    _searchController.clear();
-  }
-
-  void loadCurrentUser() async {
-    final userInfo = await UserStorage.fetchUserInfo();
-    if (!mounted) return;
-    if (userInfo != null) {
-      setState(() {
-        currentUser = userInfo;
-      });
-    }
-  }
-
-  Future<void> loadFriends() async {
-    final username = await TokenService.getUsername();
-    final offlineFriends = RealmFriendService.getAllLocalFriends(username);
-    if (!mounted) return;
-    setState(() {
-      friendsList = offlineFriends.map((f) => f.friendToJson()).toList();
-      originalFriendsList = friendsList;
-    });
-
-    try {
-      // Gọi API nếu có mạng
-
-      final apiFriends = await FriendService.fetchFriends();
-
-      // Lưu vào Realm(ghi đè fullname, ... nhưng giữ localNickName)
-      RealmFriendService.saveFriendsToLocal(apiFriends, username);
-
-      //lấy từ realm có đầy đủ localNickName
-      final updatedFriends = RealmFriendService.getAllLocalFriends(username);
-
-      // Cập nhật hiển thị
-      setState(() {
-        friendsList = updatedFriends.map((f) => f.friendToJson()).toList();
-
-        // for (var friend in friendsList) {
-        //   print('--- Friend ---');
-        //   friend.forEach((key, value) {
-        //     print('$key: $value');
-        //   });
-        // }
-
-        originalFriendsList = friendsList;
-      });
-    } catch (e) {
-      print('Không thể gọi API, dùng dữ liệu Realm offline. $e');
-    }
-  }
-
-  void _onSearchChanged() {
-    if (!mounted) return;
-    setState(() {
-      friendsList = FriendService.filterFriends(
-        originalFriendsList,
-        _searchController.text,
-      );
-    });
-  }
-
-  void _logout(BuildContext context) async {
-    // Xóa thông tin người dùng đã lưu
-    await TokenService.clearToken();
-    if (!mounted) return;
-    // Chuyển hướng về trang đăng nhập
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadCurrentUser();
-    loadFriends();
-    _searchController.addListener(() {
-      _onSearchChanged();
-    });
-  }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _searchController.removeListener(_onSearchChanged);
     super.dispose();
   }
 
@@ -144,7 +85,7 @@ class MyHome extends State<FriendsList> {
             child: PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'logout') {
-                  _logout(context);
+                  context.read<FriendsListBloc>().add(LogoutRequested());
                 }
               },
               itemBuilder: (BuildContext context) {
@@ -188,6 +129,11 @@ class MyHome extends State<FriendsList> {
                 child: TextField(
                   controller: _searchController,
                   style: TextStyle(fontSize: 12),
+                  onChanged: (text) {
+                    context.read<FriendsListBloc>().add(
+                      SearchFriendChanged(query: text),
+                    );
+                  },
                   decoration: InputDecoration(
                     icon: Padding(
                       padding: const EdgeInsets.only(left: 10.0),
@@ -199,7 +145,10 @@ class MyHome extends State<FriendsList> {
                     contentPadding: EdgeInsets.symmetric(vertical: 12),
                     suffixIcon: GestureDetector(
                       //bắt sự kiện khi người dùng click vào icon
-                      onTap: _clearSearch,
+                      onTap: () {
+                        _searchController.clear();
+                        context.read<FriendsListBloc>().add(ClearSearch());
+                      },
                       child: Icon(Icons.close, size: 20),
                     ),
                   ),
@@ -220,70 +169,86 @@ class MyHome extends State<FriendsList> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    await loadFriends();
+                    context.read<FriendsListBloc>().add(RefreshFriends());
                   },
-                  child: ListView.builder(
-                    itemCount: friendsList.length,
-                    // physics: BouncingScrollPhysics(),//hiệu ứng cuộn 'giật nhẹ lại'
-                    itemBuilder: (context, index) {
-                      final f = friendsList[index];
-                      String? content = f['Content'];
+                  child: BlocBuilder(
+                    builder: (context, state) {
+                      if (state is FriendsListLoading) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (state is FriendsListLoaded) {
+                        final friendsList = state.friends;
+                        return ListView.builder(
+                          itemCount: friendsList.length,
+                          // physics: BouncingScrollPhysics(),//hiệu ứng cuộn 'giật nhẹ lại'
+                          itemBuilder: (context, index) {
+                            final f = friendsList[index];
+                            String? content = f['Content'];
 
-                      final filesJson = f['Files'] as List<dynamic>? ?? [];
-                      final List<FileModel> tempFiles =
-                          filesJson
-                              .map(
-                                (e) => fileModelFromJson(
-                                  e as Map<String, dynamic>,
-                                ),
-                              )
-                              .toList();
+                            final filesJson =
+                                f['Files'] as List<dynamic>? ?? [];
+                            final List<FileModel> tempFiles =
+                                filesJson
+                                    .map(
+                                      (e) => fileModelFromJson(
+                                        e as Map<String, dynamic>,
+                                      ),
+                                    )
+                                    .toList();
 
-                      final imagesJson = f['Images'] as List<dynamic>? ?? [];
-                      final List<FileModel> tempImages =
-                          imagesJson
-                              .map(
-                                (e) => fileModelFromJson(
-                                  e as Map<String, dynamic>,
-                                ),
-                              )
-                              .toList();
+                            final imagesJson =
+                                f['Images'] as List<dynamic>? ?? [];
+                            final List<FileModel> tempImages =
+                                imagesJson
+                                    .map(
+                                      (e) => fileModelFromJson(
+                                        e as Map<String, dynamic>,
+                                      ),
+                                    )
+                                    .toList();
 
-                      if (tempFiles.isNotEmpty) {
-                        content = 'Đã gửi file cho bạn!';
-                      } else if (tempImages.isNotEmpty) {
-                        content = 'Đã gửi ảnh cho bạn!';
-                      } else if ((content == null || content == '') &&
-                          tempFiles.isEmpty &&
-                          tempImages.isEmpty) {
-                        content = 'Hãy bắt đầu cuộc trò chuyện!';
+                            if (tempFiles.isNotEmpty) {
+                              content = 'Đã gửi file cho bạn!';
+                            } else if (tempImages.isNotEmpty) {
+                              content = 'Đã gửi ảnh cho bạn!';
+                            } else if ((content == null || content == '') &&
+                                tempFiles.isEmpty &&
+                                tempImages.isEmpty) {
+                              content = 'Hãy bắt đầu cuộc trò chuyện!';
+                            }
+                            final fullName = f['FullName'] ?? 'No Name';
+                            final avatar =
+                                (f['Avatar'] != null)
+                                    ? ApiConstants.getUrl(f['Avatar'])
+                                    : 'https://static2.yan.vn/YanNews/2167221/202102/facebook-cap-nhat-avatar-doi-voi-tai-khoan-khong-su-dung-anh-dai-dien-e4abd14d.jpg';
+                            final isOnline = f['isOnline'];
+                            final friendId = f['FriendID'];
+                            final isSend = f['isSend'];
+                            final username = f['Username'];
+                            final localNickname = f['localNickname'];
+                            final chatColor = f['chatColor'];
+
+                            final Friend friend = Friend(
+                              friendId,
+                              fullName,
+                              username,
+                              isOnline ?? false,
+                              isSend ?? 0,
+                              content: content,
+                              files: tempFiles,
+                              images: tempImages,
+                              localNickname: localNickname,
+                              chatColor: chatColor,
+                            );
+
+                            return FriendTile(
+                              avatarUrl: avatar,
+                              friend: friend,
+                            );
+                          },
+                        );
+                      } else {
+                        return Center(child: Text('Không có dữ liệu'));
                       }
-                      final fullName = f['FullName'] ?? 'No Name';
-                      final avatar =
-                          (f['Avatar'] != null)
-                              ? ApiConstants.getUrl(f['Avatar'])
-                              : 'https://static2.yan.vn/YanNews/2167221/202102/facebook-cap-nhat-avatar-doi-voi-tai-khoan-khong-su-dung-anh-dai-dien-e4abd14d.jpg';
-                      final isOnline = f['isOnline'];
-                      final friendId = f['FriendID'];
-                      final isSend = f['isSend'];
-                      final username = f['Username'];
-                      final localNickname = f['localNickname'];
-                      final chatColor = f['chatColor'];
-
-                      final Friend friend = Friend(
-                        friendId,
-                        fullName,
-                        username,
-                        isOnline ?? false,
-                        isSend ?? 0,
-                        content: content,
-                        files: tempFiles,
-                        images: tempImages,
-                        localNickname: localNickname,
-                        chatColor: chatColor,
-                      );
-
-                      return FriendTile(avatarUrl: avatar, friend: friend);
                     },
                   ),
                 ),

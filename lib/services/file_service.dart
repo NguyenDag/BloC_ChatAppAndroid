@@ -59,7 +59,7 @@ class FileService {
 
       await file.writeAsBytes(response.data);
     } catch (e) {
-      print('Download error: $e');
+      // print('Download error: $e');
     }
   }
 

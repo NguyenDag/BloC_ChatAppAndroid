@@ -68,10 +68,10 @@ class UserStorage {
         // List<dynamic> rawList = body['data'];
         return body['data'];
       }else{
-        print('Lỗi API: ${body['message']}');
+        // print('Lỗi API: ${body['message']}');
       }
     }else{
-      print('Lỗi server: ${response.statusCode}');
+      // print('Lỗi server: ${response.statusCode}');
     }
     return null;
   }

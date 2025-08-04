@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-abstract class FriendsListState extends Equatable{
+abstract class FriendsListState extends Equatable {
   const FriendsListState();
 
   @override
@@ -28,6 +28,12 @@ class FriendsListError extends FriendsListState {
   final String message;
 
   const FriendsListError(this.message);
+}
+
+class ChatOpened extends FriendsListState {
+  final Map<String, dynamic> friendData;
+
+  const ChatOpened({required this.friendData});
 }
 
 class FriendsListLoggedOut extends FriendsListState {}

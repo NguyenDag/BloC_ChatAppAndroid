@@ -40,10 +40,10 @@ class MessageService {
             )
             .toList();
       } else {
-        print('Lỗi API: ${body['message']}');
+        // print('Lỗi API: ${body['message']}');
       }
     } else {
-      print('Lỗi server: ${response.statusCode}');
+      // print('Lỗi server: ${response.statusCode}');
     }
     return [];
   }
@@ -130,13 +130,13 @@ class MessageService {
         if (jsonResp['status'] == 1) {
           return messageFromJson(jsonResp['data'], friendId);
         } else {
-          print('Send failed: ${jsonResp['message']}');
+          // print('Send failed: ${jsonResp['message']}');
         }
       } else {
-        print('HTTP error: ${response.statusCode}');
+        // print('HTTP error: ${response.statusCode}');
       }
     } catch (e) {
-      print('Exception sending message: $e');
+      // print('Exception sending message: $e');
     }
 
     return null;
@@ -190,7 +190,7 @@ class MessageService {
   }
 
   static void showRenameDialog(BuildContext context, Friend friend) {
-    final controller_nickname = TextEditingController(
+    final controllerNickname = TextEditingController(
       text: friend.localNickname ?? friend.fullName,
     );
     showDialog(
@@ -199,7 +199,7 @@ class MessageService {
           (context) => AlertDialog(
             title: const Text('Đổi biệt danh'),
             content: TextField(
-              controller: controller_nickname,
+              controller: controllerNickname,
               decoration: const InputDecoration(hintText: 'Nhập biệt danh mới'),
             ),
             actions: [
@@ -209,7 +209,7 @@ class MessageService {
               ),
               TextButton(
                 onPressed: () {
-                  final newName = controller_nickname.text.trim();
+                  final newName = controllerNickname.text.trim();
                   if (newName.isNotEmpty && newName != friend.fullName) {
                     FriendService.setLocalNickname(
                       RealmFriendService.realm,

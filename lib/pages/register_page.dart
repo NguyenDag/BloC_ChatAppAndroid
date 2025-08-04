@@ -1,19 +1,13 @@
-import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:myapp/constants/app_constants.dart';
 import 'package:myapp/constants/color_constants.dart';
-import 'package:myapp/models/user_info.dart';
 import 'package:myapp/pages/login_page.dart';
-import 'package:myapp/services/user_storage.dart';
 
 import '../blocs/auth/register/register_bloc.dart';
 import '../blocs/auth/register/register_event.dart';
 import '../blocs/auth/register/register_state.dart';
-import '../constants/api_constants.dart';
-import '../services/register_service.dart';
 // import 'package:path_provider/path_provider.dart'; //liên quan xử lý file
 
 class RegisterPage extends StatelessWidget {

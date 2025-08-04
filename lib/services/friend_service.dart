@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui' show Color;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -52,18 +51,16 @@ class FriendService {
                   item['content'] = 'Hãy bắt đầu cuộc trò chuyện!';
                 }
               }
-
               return item.cast<String, dynamic>();
             }).toList();
 
         return processedList;
       } else {
-        print('Lỗi API: ${body['message']}');
+        // print('Lỗi API: ${body['message']}');
       }
     } else {
-      print('Lỗi server: ${response.statusCode}');
+      // print('Lỗi server: ${response.statusCode}');
     }
-
     return [];
   }
 
@@ -77,7 +74,7 @@ class FriendService {
     }).toList();
   }
 
-  static void setChatColor(Realm realm, Friend f, int colorValue){
+  static void setChatColor(Realm realm, Friend f, int colorValue) {
     final friend = realm.find<Friend>(f.friendId);
     if (friend != null) {
       realm.write(() {
@@ -86,7 +83,7 @@ class FriendService {
     }
   }
 
-  static Color getChatColor(Friend friend){
+  static Color getChatColor(Friend friend) {
     return friend.chatColor != null ? Color(friend.chatColor!) : Colors.white;
   }
 
@@ -100,6 +97,8 @@ class FriendService {
   }
 
   static String getDisplayName(Friend friend) {
-    return friend.localNickname?.isNotEmpty == true ? friend.localNickname! : friend.fullName;
+    return friend.localNickname?.isNotEmpty == true
+        ? friend.localNickname!
+        : friend.fullName;
   }
 }

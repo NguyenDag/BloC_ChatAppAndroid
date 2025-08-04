@@ -92,7 +92,7 @@ class MyWidget extends State<OnlineChat> {
           _scrollToBottom();
         });
       } catch (apiError) {
-        print('Không thể gọi API, sử dụng dữ liệu offline. Error: $apiError');
+        // print('Không thể gọi API, sử dụng dữ liệu offline. Error: $apiError');
 
         if (!mounted) return;
 
@@ -109,7 +109,7 @@ class MyWidget extends State<OnlineChat> {
         _showOfflineMessage();
       }
     } catch (realmError) {
-      print('Lỗi khi load tin nhắn từ Realm: $realmError');
+      // print('Lỗi khi load tin nhắn từ Realm: $realmError');
 
       if (!mounted) return;
 
@@ -832,7 +832,6 @@ class _ImageMessages extends StatelessWidget {
         ),
       );
     }
-    ;
     return imageWidget;
   }
 

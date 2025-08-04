@@ -13,7 +13,7 @@ class RegisterSubmitted extends RegisterEvent {
   final String password;
   final String confirmPassword;
 
-  RegisterSubmitted({required this.fullName, required this.username, required this.password, required this.confirmPassword});
+  const RegisterSubmitted({required this.fullName, required this.username, required this.password, required this.confirmPassword});
 
   @override
   List<Object> get props => [fullName, username, password, confirmPassword];
