@@ -8,7 +8,7 @@
     <application
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true"
-        android:label="BkavChat"
+        android:label="Chat_BloC"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

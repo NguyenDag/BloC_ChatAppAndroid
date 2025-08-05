@@ -62,8 +62,7 @@ class FriendsListBloc extends Bloc<FriendsListEvent, FriendsListState> {
 
       // Lấy lại từ Realm sau khi cập nhật
       final updatedFriends = RealmFriendService.getAllLocalFriends(username);
-      _originalFriendsList =
-          updatedFriends.map((f) => f.friendToJson()).toList();
+      _originalFriendsList = updatedFriends.map((f) => f.friendToJson()).toList();
 
       emit(
         FriendsListLoaded(

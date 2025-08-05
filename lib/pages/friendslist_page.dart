@@ -5,10 +5,11 @@ import 'package:myapp/blocs/chat/friends_list/friends_list_event.dart';
 import 'package:myapp/blocs/chat/friends_list/friends_list_state.dart';
 import 'package:myapp/constants/api_constants.dart';
 import 'package:myapp/models/opp_model.dart';
-import 'package:myapp/pages/online_chat.dart';
+import 'package:myapp/pages/chat.dart';
 
 import '../constants/color_constants.dart';
 import '../services/friend_service.dart';
+import 'login_page.dart';
 
 late Size mq;
 
@@ -52,6 +53,13 @@ class _FriendsListViewState extends State<FriendsListView> {
   Map<String, dynamic>? currentUser;
 
   @override
+  void initState() {
+    super.initState();
+    // context.read<FriendsListBloc>().add(LoadCurrentUser());
+    context.read<FriendsListBloc>().add(LoadFriends());
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -62,8 +70,8 @@ class _FriendsListViewState extends State<FriendsListView> {
     mq = MediaQuery.of(context).size;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      extendBodyBehindAppBar:
-          false, //đảm bảo phần body không vẽ ra sau appbar để tránh xung đột màu
+      //đảm bảo phần body không vẽ ra sau appbar để tránh xung đột màu
+      extendBodyBehindAppBar: false,
       // backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -79,18 +87,31 @@ class _FriendsListViewState extends State<FriendsListView> {
           ),
         ),
         actions: [
-          //chứa widget nằm ở cuối( bên phải) của appBar
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'logout') {
                   context.read<FriendsListBloc>().add(LogoutRequested());
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
                 }
               },
               itemBuilder: (BuildContext context) {
                 return [
+                  // Dòng 1: Hiển thị tên người dùng (disabled)
                   PopupMenuItem<String>(
+                    enabled: false, // Không cho chọn
+                    child: Text(
+                      currentUser?['FullName'] ?? 'Người dùng',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  // Dòng 2: Nút Đăng xuất
+                  const PopupMenuItem<String>(
                     value: 'logout',
                     child: Text('Đăng xuất'),
                   ),
@@ -171,15 +192,15 @@ class _FriendsListViewState extends State<FriendsListView> {
                   onRefresh: () async {
                     context.read<FriendsListBloc>().add(RefreshFriends());
                   },
-                  child: BlocBuilder(
+                  child: BlocBuilder<FriendsListBloc, FriendsListState>(
                     builder: (context, state) {
                       if (state is FriendsListLoading) {
                         return Center(child: CircularProgressIndicator());
                       } else if (state is FriendsListLoaded) {
                         final friendsList = state.friends;
                         return ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: friendsList.length,
-                          // physics: BouncingScrollPhysics(),//hiệu ứng cuộn 'giật nhẹ lại'
                           itemBuilder: (context, index) {
                             final f = friendsList[index];
                             String? content = f['Content'];

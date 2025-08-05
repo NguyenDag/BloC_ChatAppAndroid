@@ -1,7 +1,11 @@
+import 'dart:convert';
 
+import 'package:http/http.dart' as http;
+import 'package:myapp/services/token_service.dart';
 import 'package:myapp/services/user_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants/api_constants.dart';
 import '../models/user_info.dart';
 
 class LoginService {
@@ -24,22 +28,8 @@ class LoginService {
       return 'Tên đăng nhập không được để trống';
     } else if (password.isEmpty) {
       return 'Mật khẩu không được để trống';
-    } else if(username != "user1"){
-      return 'Tên đăng nhập không đúng';
-    }else if(password != "123"){
-      return 'Mật khẩu không đúng';
     }
-
-    final newUserInfo = UserInfo(
-      username: username,
-      fullName: "Nguyen Dang Nguyen",
-      avatar: "link",
-    );
-    await UserStorage.saveUserInfo(newUserInfo);
-
-    return null;
-
-    /*String endPoint = '/auth/login';
+    String endPoint = '/auth/login';
     final uri = Uri.parse(ApiConstants.getUrl(endPoint));
 
     try {
@@ -71,6 +61,6 @@ class LoginService {
       }
     } catch (e) {
       return 'Lỗi kết nối tới máy chủ!';
-    }*/
+    }
   }
 }
