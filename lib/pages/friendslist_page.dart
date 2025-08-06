@@ -19,16 +19,21 @@ class FriendsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => FriendsListBloc(),
+      create: (context) => FriendsListBloc()..add(LoadFriends()),
       child: BlocListener<FriendsListBloc, FriendsListState>(
         listener: (context, state) {
           if (state is ChatOpened) {
             final friend = friendFromJson(state.friendData);
             final avatarUrl = state.friendData['avatarUrl'] ?? '';
+            final ChatConfig config = ChatConfig();
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder:
-                    (_) => OnlineChat(friend: friend, avatarUrl: avatarUrl),
+                    (_) => OnlineChat(
+                      friend: friend,
+                      avatarUrl: avatarUrl,
+                      config: config,
+                    ),
               ),
             );
           }
@@ -51,13 +56,6 @@ class _FriendsListViewState extends State<FriendsListView> {
   List<Map<String, dynamic>> friendsList = [];
   List<Map<String, dynamic>> originalFriendsList = [];
   Map<String, dynamic>? currentUser;
-
-  @override
-  void initState() {
-    super.initState();
-    // context.read<FriendsListBloc>().add(LoadCurrentUser());
-    context.read<FriendsListBloc>().add(LoadFriends());
-  }
 
   @override
   void dispose() {
@@ -261,9 +259,12 @@ class _FriendsListViewState extends State<FriendsListView> {
                               chatColor: chatColor,
                             );
 
+                            final ChatConfig config = ChatConfig();
+
                             return FriendTile(
                               avatarUrl: avatar,
                               friend: friend,
+                              config: config,
                             );
                           },
                         );
@@ -285,8 +286,14 @@ class _FriendsListViewState extends State<FriendsListView> {
 class FriendTile extends StatelessWidget {
   final String avatarUrl;
   final Friend friend;
+  final ChatConfig config;
 
-  const FriendTile({super.key, required this.avatarUrl, required this.friend});
+  const FriendTile({
+    super.key,
+    required this.avatarUrl,
+    required this.friend,
+    required this.config,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +303,7 @@ class FriendTile extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) {
-              return OnlineChat(friend: friend, avatarUrl: avatarUrl);
+              return OnlineChat(friend: friend, avatarUrl: avatarUrl, config: config);
             },
           ),
         );

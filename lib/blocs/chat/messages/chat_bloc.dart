@@ -214,7 +214,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             .toList();
 
     final updatedFiles = [...state.pickedFiles, ...newFiles];
+
     emit(state.copyWith(pickedFiles: updatedFiles));
+
   }
 
   void _onRemoveFile(RemoveFile event, Emitter<ChatState> emit) {
