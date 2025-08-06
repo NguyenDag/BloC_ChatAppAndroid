@@ -62,7 +62,8 @@ class ChatState extends Equatable {
   // Computed properties
   bool get isLoading => status == ChatStatus.loading;
   bool get isSending => status == ChatStatus.sending;
-  bool get hasError => status == ChatStatus.failure || status == ChatStatus.sendFailure;
+  bool get hasError =>
+      status == ChatStatus.failure || status == ChatStatus.sendFailure;
   bool get isOffline => status == ChatStatus.offline;
   bool get hasAttachments => pickedImages.isNotEmpty || pickedFiles.isNotEmpty;
   int get totalAttachments => pickedImages.length + pickedFiles.length;
